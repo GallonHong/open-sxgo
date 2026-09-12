@@ -1,6 +1,17 @@
 # Cloudflare Workers + Supabase PostgreSQL staging：部署与回滚
 
-本文是一个全新、封闭 staging 的操作手册。它描述仓库当前支持的本地准备流程，不代表 Cloudflare Worker、Hyperdrive 或 Supabase staging 已经部署；截至本文编写时没有云端部署、域名、邀请发放或远端 CI 验收结果可供声明。
+本文是一个封闭 staging 的操作手册。下面的状态段记录 2026-09-12 已完成的 staging 部署与验证；其余章节保留从零初始化、日常检查和回滚步骤。该环境仍是 pilot，不能当作完整 pilot 或生产就绪证明。
+
+## 当前状态（2026-09-12）
+
+- 代码提交 `7919917` 已部署到 Cloudflare Worker，部署版本为 `22bf48a6-105d-434b-9f49-f58da446d71d`。测试入口为 [open-sxgo-postgres-staging.gallonhong.workers.dev/pilot](https://open-sxgo-postgres-staging.gallonhong.workers.dev/pilot)。该入口使用应用内邀请 cookie，未启用收费的 Cloudflare Access/Zero Trust。
+- Supabase project `open-sxgo-staging` 已创建，`wfd_private` schema 已有 62 张表。迁移角色当前为 `wfd_migrator` 且 `NOLOGIN`；运行时角色为 `wfd_runtime`，无管理权限和 `BYPASSRLS`。`anon` 没有该 schema 的 `USAGE` 权限。
+- 本机使用 Supabase CA 的 TLS `verify-full` 验证通过。Hyperdrive 使用直连数据库连接（不是 pooler），查询缓存已关闭，origin connection limit 为 5，并以自定义 CA 配置 `sslmode=verify-full`。
+- 线上 smoke 已通过：无邀请码访问 `/health` 返回 403；邀请码入口返回 303；认证后 `/health` 返回 200 且 `database: ready`；`/companies`、`/admin`、`/contribute` 和 `/admin/v1/auth/get-session` 返回 200（后者为空会话）；不存在的 `/public/missing.json` 返回 404；配置保持 `intake=false`、`promo=false`；投稿 POST 返回 `503 INTAKE_PAUSED`；无效回执状态 POST 返回 401，证明限流写库路径工作。
+- 云端 PostgreSQL 的条件更新失败回滚测试通过，没有留下测试记录。线上发布包 `2026-09-12.1` 的元数据、8 个数据文件及暂停清单均通过验证；仍使用演示信任根，当前时间戳元数据于北京时间 2026-09-14 20:33 到期，持续试运行前须更新测试发布包。
+- GitHub CI 对提交 `7919917` 成功；GHCR 的 mirror、backend、postgres 镜像已验证存在匿名可拉取的 amd64/arm64 manifest。Radicle RID `rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK` 的 `7919917` 已同步到 1 个 seed。
+
+尚未配置真实审核账号或两名独立审核员，因此不能宣称完整 pilot 入场已经 ready。本文不记录密码、邀请清晰码、真实用户邮箱或账号 ID；旧 Sites/D1 和 SQLite 容器仍保留，真实私密数据没有迁移。
 
 目标拓扑如下：浏览器访问 Cloudflare Worker 和静态资源，Worker 通过一个关闭查询缓存的 Hyperdrive 连接到一个新的 Supabase PostgreSQL staging 数据库。原有 Sites/D1 和 SQLite 容器继续保留；本流程不导入、不复制真实私密数据，也不改变旧的 compose.yaml、Sites 或 SQLite 迁移。
 
@@ -147,7 +158,7 @@ BETTER_AUTH_SECRET、PILOT_COOKIE_SECRET 和 PILOT_INVITE_HASHES 必须通过 Wr
 
 在该命令成功前不要把 staging URL 当作已上线地址，也不要发放邀请。Worker required secrets 缺失时应停止部署；如果 pilot gate 的当前实现或配置入口仍在变更，继续保持未部署状态。
 
-## 6. 发布前检查和本地验收
+## 6. 发布前检查和验收
 
 以下命令应在本地或 CI 中使用受保护的 TEST_POSTGRES_URL/secret 注入。示例不含真实连接串；不要把真实密码替换后提交到 shell script 或日志：
 
@@ -172,7 +183,7 @@ infra/postgres/Dockerfile 是 PostgreSQL API runtime image；仓库目前没有�
 - infra/postgres/Dockerfile 的本机 arm64 构建和独立 smoke 数据库迁移通过；本机 /health 返回 status: ok、database: ready、mode: production。
 - 本地最终检查通过：typecheck、28 个测试文件共 220 个测试、三个前端 build，以及 Cloudflare dry-run。
 
-这些结果不能证明 Supabase、Hyperdrive、Worker、custom domain、workers.dev、远端 CI 或邀请流程已经验收。云端 staging 的接受条件还包括：真实资源 ID 的 dry-run、Hyperdrive caching.disabled 读回、运行时角色权限和 search path 读回、匿名 Supabase 角色无私密表权限、备份/恢复演练、真实 pilot 人员演练和日志/告警检查。
+上述本地结果与“当前状态”中的线上 smoke、CI 和镜像验证共同证明 staging 链路已部署并可进行封闭测试，但不证明完整 pilot ready。仍需完成真实审核人员演练、双审核员和冲突/身份复核、备份/恢复演练、线上日志/告警检查，以及后续真实资源变更的 dry-run 与权限读回。
 
 ## 7. 当前功能开关和未完成阻塞
 
