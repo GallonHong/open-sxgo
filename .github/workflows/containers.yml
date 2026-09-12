@@ -1,0 +1,50 @@
+name: Publish containers
+on:
+  push:
+    branches: [main]
+    paths: ['apps/**', 'packages/**', 'scripts/**', 'infra/**', 'migrations/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/containers.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Registry login
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Build and publish
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          for component in mirror backend; do
+            file=infra/mirror/Dockerfile
+            if [ "$component" = backend ]; then file=infra/intake/Dockerfile; fi
+            image="ghcr.io/gallonhong/open-sxgo-$component"
+            docker build --label org.opencontainers.image.source=https://github.com/GallonHong/open-sxgo --label org.opencontainers.image.revision="$GITHUB_SHA" -f "$file" -t "$image:$GITHUB_SHA-$ARCH" .
+            docker push "$image:$GITHUB_SHA-$ARCH"
+          done
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Registry login
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Publish both architectures
+        run: |
+          for component in mirror backend; do
+            image="ghcr.io/gallonhong/open-sxgo-$component"
+            docker buildx imagetools create -t "$image:latest" -t "$image:$GITHUB_SHA" "$image:$GITHUB_SHA-amd64" "$image:$GITHUB_SHA-arm64"
+          done

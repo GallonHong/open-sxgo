@@ -88,7 +88,10 @@ export function createApp(
       503,
     );
   });
-  app.get('/health', (c) => c.json({ status: 'ok', mode: config.mode }));
+  app.get('/health', async (c) => {
+    await db.all('SELECT id FROM work_items LIMIT 1');
+    return c.json({ status: 'ok', database: 'ready', mode: config.mode });
+  });
   app.get('/private/v1/config', (c) =>
     c.json({
       intake_enabled: config.intakeEnabled,

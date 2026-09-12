@@ -1,0 +1,21 @@
+import { execFileSync } from 'node:child_process';
+import { readFile, mkdir, writeFile, mkdtemp } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { createRecovery } from '../packages/mirror-sync/src/recovery';
+import { decode } from '../packages/verifier/src/index';
+const [source='.runtime/public/public',rootPath='bootstrap/demo-root.json']=process.argv.slice(2);
+await mkdir('.runtime/ipfs',{recursive:true});
+const work=await mkdtemp(resolve('.runtime/ipfs/publish-'));
+const bundle=work+'/recovery';
+// Only the verification allowlist enters IPFS, never the workspace or private database.
+const result=await createRecovery(source,decode(await readFile(rootPath)),bundle);
+const run=(args:string[])=>execFileSync('docker',args,{encoding:'utf8',timeout:180000}).trim();
+run(['compose','--profile','ipfs','up','-d','--wait','ipfs']);
+const target='/tmp/'+work.split('/').at(-1);
+run(['cp',bundle,'open-sxgo-ipfs:'+target]);
+const cid=run(['exec','open-sxgo-ipfs','ipfs','add','-Qr','--cid-version=1','--pin=true',target]);
+if(!/^b[a-z2-7]{20,}$/.test(cid))throw Error('INVALID_CID');
+run(['exec','open-sxgo-ipfs','ipfs','pin','ls',cid]);
+const record={cid,release:result.release,created_at:new Date().toISOString(),gateway:'http://127.0.0.1:8081/ipfs/'+cid+'/',scope:'verified-public-recovery-only'};
+await writeFile('.runtime/ipfs/latest.json',JSON.stringify(record,null,2));
+console.log(JSON.stringify(record,null,2));

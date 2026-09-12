@@ -20,3 +20,5 @@ worker-configuration.d.ts
 .sites-local/
 .DS_Store
 *.tar.gz
+
+public-data.zip

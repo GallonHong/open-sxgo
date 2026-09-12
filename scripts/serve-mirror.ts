@@ -36,9 +36,13 @@ const server = createServer(async (req, res) => {
     }
     const url = new URL(req.url ?? '/', 'http://mirror');
     if (url.pathname === '/health') {
-      const current = await readFile(join(dir, 'CURRENT'), 'utf8');
+      const current = (await readFile(join(dir, 'CURRENT'), 'utf8')).trim();
+      if (!/^[a-z0-9.-]+$/.test(current)) throw Error('INVALID_CURRENT');
+      const state = JSON.parse(await readFile(join(dir, 'versions', current, 'state.json'), 'utf8'));
+      const timestamp = JSON.parse(state.metadata.timestamp);
+      const historical = Date.parse(timestamp.signed.expires) <= Date.now();
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ state: 'serving', release: current.trim(), read_only: true }));
+      res.end(JSON.stringify({ state: historical ? 'historical' : 'serving', release: current, read_only: true, expires_at: timestamp.signed.expires, updating: syncing }));
       return;
     }
     if (!url.pathname.startsWith('/public/') || url.pathname.split('/').includes('..')) {
@@ -70,7 +74,7 @@ const server = createServer(async (req, res) => {
     }
     createReadStream(path).pipe(res);
   } catch {
-    res.writeHead(404).end('Not found');
+    res.writeHead(req.url === '/health' ? 503 : 404).end(req.url === '/health' ? 'No verified snapshot' : 'Not found');
   }
 });
 server.listen(Number(process.env.PORT ?? 8080), '0.0.0.0');

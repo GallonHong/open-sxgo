@@ -35,7 +35,9 @@
     "test:differential": "tsx scripts/differential.ts",
     "key:new": "tsx scripts/generate-key.ts",
     "governance:demo": "tsx scripts/governance-demo.ts",
-    "maintenance": "tsx scripts/maintenance.ts"
+    "maintenance": "tsx scripts/maintenance.ts",
+    "ipfs:publish": "tsx scripts/ipfs-publish.ts",
+    "mirror:up": "sh scripts/mirror-up.sh"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.4",

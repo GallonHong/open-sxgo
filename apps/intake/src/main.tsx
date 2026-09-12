@@ -21,7 +21,7 @@ function App() {
     <>
       <div className="demo-strip">可信投稿站 · 封闭演示，请勿提交真实个人信息</div>
       <header>
-        <a className="wordmark" href="http://127.0.0.1:5173">
+        <a className="wordmark" href={import.meta.env.DEV ? 'http://127.0.0.1:5173' : '/'}>
           <span className="mark">w</span>劳动友好目录
         </a>
         <nav>
@@ -30,7 +30,7 @@ function App() {
           <Link to="/report">变化与纠错</Link>
           <a
             href={
-              (import.meta.env.VITE_ADMIN_ORIGIN || 'http://localhost:5175') +
+              (import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://localhost:5175' : '')) +
               '/member/contributions'
             }
           >

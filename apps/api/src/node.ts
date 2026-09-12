@@ -24,8 +24,8 @@ const auth = createAuth(drizzle(sqlite, { schema }), secret!, adminOrigin, db);
 const app = createApp(
   db,
   {
-    mode: 'demo',
-    intakeEnabled: true,
+    mode: process.env.WFD_MODE === 'production' ? 'production' : 'demo',
+    intakeEnabled: process.env.WFD_INTAKE_ENABLED !== 'false',
     promotionEnabled: false,
     productionReleaseEnabled: false,
     origins,
@@ -35,7 +35,7 @@ const app = createApp(
   (r) => auth.handler(r),
 );
 const server = serve(
-  { fetch: app.fetch, hostname: process.env.WFD_BIND_HOST ?? '127.0.0.1', port: 8787 },
+  { fetch: app.fetch, hostname: process.env.WFD_BIND_HOST ?? '127.0.0.1', port: Number(process.env.PORT ?? 8787) },
   () => console.log('可信私密服务 http://127.0.0.1:8787'),
 );
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
