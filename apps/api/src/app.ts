@@ -15,6 +15,7 @@ import { hash, utf8, strictJSON } from '../../../packages/verifier/src/crypto';
 import { Service, requireRole } from './service';
 import { governanceRoutes } from './governance';
 import { createReviewRoutes } from './review';
+import { createAccountsRoutes } from './accounts';
 import { governanceActionsRoutes } from './governance-actions';
 import { resolveIdentity, authorize } from '../../../packages/identity-permissions/src/index';
 export type Config = {
@@ -162,6 +163,7 @@ export function createApp(
       ? resolveIdentity(db, { user_id: p.user_id, session_id: p.session_id })
       : null;
   };
+  app.route('/admin/v1', createAccountsRoutes(db, resolveMember, config.origins[0]));
   app.route(
     '/admin/v1',
     createReviewRoutes(db, resolveMember, {

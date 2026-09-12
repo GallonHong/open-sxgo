@@ -73,6 +73,7 @@ export default {
     const intake = ['/contribute', '/receipt', '/report'].includes(url.pathname);
     const admin =
       url.pathname === '/admin' ||
+      url.pathname.startsWith('/admin/') ||
       ['/member/', '/review/', '/governance/'].some((p) => url.pathname.startsWith(p));
     if (intake) url.pathname = '/intake.html';
     else if (admin) url.pathname = '/admin.html';

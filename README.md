@@ -54,6 +54,8 @@ pnpm dev
 
 ## 审核演练
 
+线上账号由账号管理员建立，首次登录需绑定个人验证器和通行密钥。参见[账号管理员说明](docs/ACCOUNT-ADMIN.md)；新审核员开户后仍需人员核验与权限授予。
+
 ```sh
 pnpm auth:invite reviewer.one@example.invalid person_demo_one
 pnpm auth:invite reviewer.two@example.invalid person_demo_two

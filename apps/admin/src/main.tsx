@@ -4,6 +4,7 @@ import '../../web/src/style.css';
 import { ProposalEditor } from './ProposalEditor';
 import { MemberWorkspace } from './MemberWorkspace';
 import { OperationsWorkspace } from './OperationsWorkspace';
+import { AccountManagement } from './AccountManagement';
 type Item = {
   id: string;
   kind: string;
@@ -37,8 +38,19 @@ async function api(path: string, body?: unknown) {
 }
 function App() {
   async function enterMemberWorkspace() {
+    const session = await api('auth/get-session');
+    if (!session?.user?.twoFactorEnabled) return;
     const response = await fetch('/private/v1/member', { credentials: 'same-origin' });
-    if (response.ok) location.assign('/member/contributions');
+    if (response.ok) {
+      const member = (await response.json()) as {
+        grants?: { capabilities: string[]; status: string }[];
+      };
+      const administrator = member.grants?.some(
+        (g: { capabilities: string[]; status: string }) =>
+          g.status === 'active' && g.capabilities.includes('account.provision'),
+      );
+      location.assign(administrator ? '/admin/accounts' : '/member/contributions');
+    }
   }
   const [me, setMe] = useState<{ person_id: string; roles: string[] }>(),
     [tab, setTab] = useState('queue'),
@@ -49,15 +61,33 @@ function App() {
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [totp, setTotp] = useState(false),
+    [signedIn, setSignedIn] = useState(false),
+    [mfaEnabled, setMfaEnabled] = useState(false),
     [setup, setSetup] = useState<{ totpURI?: string; backupCodes?: string[] }>(),
     [password, setPassword] = useState('');
   async function refresh() {
     try {
+      const session = await api('auth/get-session');
+      setSignedIn(!!session?.user);
+      setMfaEnabled(!!session?.user?.twoFactorEnabled);
+      if (!session?.user) return;
+      if (!session.user.twoFactorEnabled) return;
+      await enterMemberWorkspace();
       setMe(await api('me'));
       setItems((await api('work-items')).items);
       setProposals((await api('proposals')).items);
     } catch (e) {
-      setError((e as Error).message);
+      const code = (e as Error).message;
+      if (
+        [
+          'AUTH_REQUIRED',
+          'UNAUTHORIZED',
+          'LEGACY_AUTHORIZATION_DISABLED',
+          'CAPABILITY_DENIED',
+        ].includes(code)
+      ) {
+        setNotice('登录验证已完成。账号的人员绑定或权限仍待管理员确认。');
+      } else setError(code);
     }
   }
   useEffect(() => {
@@ -149,54 +179,65 @@ function App() {
               </label>
               <button>使用密码登录</button>
             </form>
-            <hr />
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const f = new FormData(e.currentTarget);
-                void action(async () => {
-                  await api('auth/two-factor/verify-totp', { code: f.get('code') });
-                  setTotp(false);
-                  setSetup(undefined);
-                  setPassword('');
-                  await enterMemberWorkspace();
-                });
-              }}
-            >
-              <label>
-                动态验证码
-                <input
-                  name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  required
-                />
-              </label>
-              <button>验证并进入工作台</button>
-            </form>
-            <hr />
-            <button
-              className="ghost"
-              onClick={() =>
-                action(async () => {
-                  setSetup(await api('auth/two-factor/enable', { password, method: 'totp' }));
-                })
-              }
-            >
-              首次登录：设置验证器
-            </button>
-            {setup && (
-              <div>
-                <p>在你的身份验证器中添加以下 TOTP 地址，并输入生成的六位验证码完成设置。</p>
-                <pre>{setup.totpURI}</pre>
-                <h2>恢复码：请保存到个人密码管理器</h2>
-                <pre>{setup.backupCodes?.join('\n')}</pre>
-              </div>
+            {(totp || setup) && (
+              <>
+                <hr />
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const f = new FormData(e.currentTarget);
+                    void action(async () => {
+                      await api('auth/two-factor/verify-totp', { code: f.get('code') });
+                      setTotp(false);
+                      setSetup(undefined);
+                      setPassword('');
+                      await enterMemberWorkspace();
+                    });
+                  }}
+                >
+                  <label>
+                    动态验证码
+                    <input
+                      name="code"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                    />
+                  </label>
+                  <button>验证并进入工作台</button>
+                </form>
+              </>
+            )}
+            {signedIn && !mfaEnabled && (
+              <>
+                <hr />
+                <p>密码已验证。请设置个人验证器，再输入它生成的六位验证码。</p>
+                {!password && <p>如刚刷新页面，请先在上方密码框重新输入账号密码。</p>}
+                <button
+                  className="ghost"
+                  disabled={!password}
+                  onClick={() =>
+                    action(async () => {
+                      setSetup(await api('auth/two-factor/enable', { password, method: 'totp' }));
+                    })
+                  }
+                >
+                  首次登录：设置验证器
+                </button>
+                {setup && (
+                  <div>
+                    <p>在你的身份验证器中添加以下 TOTP 地址，并输入生成的六位验证码完成设置。</p>
+                    <pre>{setup.totpURI}</pre>
+                    <h2>恢复码：请保存到个人密码管理器</h2>
+                    <pre>{setup.backupCodes?.join('\n')}</pre>
+                  </div>
+                )}
+              </>
             )}
             <p className="muted">
-              账号由本地邀请工具建立。生产审核不得用同一自然人的多个账号代替独立复核。
+              账号由管理员建立；动态验证码来自本人绑定的验证器，不通过邮件发送。生产审核不得用同一自然人的多个账号代替独立复核。
             </p>
           </section>
         ) : (
@@ -437,7 +478,9 @@ function App() {
   );
 }
 createRoot(document.getElementById('root')!).render(
-  location.pathname.startsWith('/member/') ? (
+  location.pathname === '/admin/accounts' ? (
+    <AccountManagement />
+  ) : location.pathname.startsWith('/member/') ? (
     <MemberWorkspace />
   ) : location.pathname.startsWith('/review/') || location.pathname.startsWith('/governance/') ? (
     <OperationsWorkspace />

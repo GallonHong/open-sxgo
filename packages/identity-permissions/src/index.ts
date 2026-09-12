@@ -7,6 +7,7 @@ import type { Database, Query } from '../../db/src/adapter';
  * independent-person mapping used for review and governance cardinality.
  */
 export const capabilitySchema = z.enum([
+  'account.provision',
   'contribution.read_own',
   'contribution.assess',
   'qualification.assess',

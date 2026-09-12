@@ -1,5 +1,6 @@
 export type Query = { sql: string; params?: unknown[] };
 export interface Database {
+  readonly dialect?: 'sqlite' | 'd1' | 'postgres';
   all<T>(sql: string, params?: unknown[]): Promise<T[]>;
   batch(queries: Query[]): Promise<void>;
 }

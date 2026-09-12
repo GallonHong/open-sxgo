@@ -1310,5 +1310,5 @@ export function postgresDatabase(source: PostgresQueryable | PostgresPoolLike): 
     return pool ? operation() : serialized(operation);
   };
 
-  return { all, batch };
+  return { all, batch, dialect: 'postgres' };
 }
