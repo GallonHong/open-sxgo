@@ -7,20 +7,23 @@ const dir = resolve(process.env.MIRROR_DATA_DIR ?? '.runtime/mirror'),
   base = process.env.MIRROR_SOURCE,
   root = process.env.MIRROR_ROOT ?? 'bootstrap/demo-root.json';
 let syncing = false;
+let nextSync = 0;
 async function sync() {
-  if (!base || syncing) return;
+  if (!base || syncing || Date.now() < nextSync) return;
   syncing = true;
   try {
     const result = await syncMirror(base, dir, root);
+    nextSync = Date.now() + 15 * 60 * 1000;
     console.log(JSON.stringify({ event: 'mirror_updated', release: result.release }));
   } catch {
+    nextSync = Date.now() + 10000;
     console.error(JSON.stringify({ event: 'mirror_update_failed', action: 'retain_previous' }));
   } finally {
     syncing = false;
   }
 }
 await sync();
-const interval = setInterval(() => void sync(), 15 * 60 * 1000);
+const interval = setInterval(() => void sync(), 15000);
 const mime: Record<string, string> = {
   '.json': 'application/json',
   '.jsonl': 'application/x-ndjson',

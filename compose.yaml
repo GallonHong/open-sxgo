@@ -38,6 +38,8 @@ services:
     ports: ['127.0.0.1:8787:8787']
     environment:
       WFD_BIND_HOST: 0.0.0.0
+      WFD_MODE: ${WFD_MODE:-production}
+      WFD_INTAKE_ENABLED: ${WFD_INTAKE_ENABLED:-true}
       WFD_ADMIN_ORIGIN: ${WFD_ADMIN_ORIGIN:-http://localhost:5175}
       WFD_INTAKE_ORIGIN: ${WFD_INTAKE_ORIGIN:-http://127.0.0.1:5174}
     volumes: ['private-data:/app/.runtime/private']

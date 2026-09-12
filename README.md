@@ -8,6 +8,8 @@ PRD2 本轮实现、验收边界和剩余工作见 [治理实施记录](docs/gov
 
 Sites 托管范围与资料来源见 [网站交付说明](docs/SITE-DELIVERY.md)。代码使用 MIT 许可，第三方内容与商标保留原有权利。
 
+容器镜像拉取、后端部署与 IPFS 使用：[运行服务](docs/RUN-SERVICES.md)。
+
 ## 本地启动
 
 需要 Node.js 24.15+、pnpm 11.9.0。安装依赖会编译 SQLite 原生模块；没有预编译产物时需要本机 C++ 构建环境。

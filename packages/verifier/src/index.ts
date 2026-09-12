@@ -123,7 +123,10 @@ export async function fetchHTTP(
   });
   if (response.status === 404) return null;
   assert(response.ok, 'DOWNLOAD_FAILED');
-  assert(Number(response.headers.get('content-length') ?? 0) <= max, 'DOWNLOAD_TOO_LARGE');
+  // Content-Length is the encoded size; gzip framing may exceed tiny decoded artifacts.
+  // The streaming limit below always bounds the decoded bytes.
+  if (!response.headers.get('content-encoding') || response.headers.get('content-encoding') === 'identity')
+    assert(Number(response.headers.get('content-length') ?? 0) <= max, 'DOWNLOAD_TOO_LARGE');
   const reader = response.body?.getReader();
   assert(reader, 'EMPTY_DOWNLOAD');
   let size = 0;
