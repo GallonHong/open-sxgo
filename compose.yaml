@@ -62,4 +62,5 @@ services:
 volumes:
   ipfs-data:
   mirror-data:
+    name: ${MIRROR_VOLUME_NAME:-open-sxgo-mirror-data}
   private-data:
