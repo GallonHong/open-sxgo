@@ -117,7 +117,8 @@ export async function fetchHTTP(
   );
   const response = await fetch(targetURL, {
     redirect: 'error',
-    credentials: 'omit',
+    // Private hosting needs its same-origin gate cookie; cross-origin mirrors receive none.
+    credentials: 'same-origin',
     cache: 'no-store',
     signal: AbortSignal.timeout(15000),
   });
