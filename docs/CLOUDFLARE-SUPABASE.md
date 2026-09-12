@@ -111,7 +111,7 @@ Hyperdrive 的数据库目标应是刚初始化的 Supabase staging，连接角�
     pnpm wrangler hyperdrive update <hyperdrive-id> --caching-disabled
     pnpm wrangler hyperdrive get <hyperdrive-id>
 
-把返回的真实 ID 仅注入本地 CLOUDFLARE_HYPERDRIVE_ID，不要提交到 apps/cloudflare/wrangler.jsonc。get 的结果应能核对该 config 的连接目标和 caching.disabled=true；如果平台返回的字段形态不同，以 Cloudflare 控制台/API 的 cache-disabled 状态为准。连接串中的密码不得进入 shell history、日志、Git 或 Worker vars。
+把返回的 ID 注入部署环境；当前 deploy script 会把它写入被忽略的生成配置，tracked 的 apps/cloudflare/wrangler.jsonc 继续保留占位符。ID 本身不是密码，团队也可以按普通配置规则在受控部署记录中保存它。get 的结果应能核对该 config 的连接目标和 caching.disabled=true；如果平台返回的字段形态不同，以 Cloudflare 控制台/API 的 cache-disabled 状态为准。连接串中的密码不得进入 shell history、日志、Git 或 Worker vars。
 
 当前 Worker 只有一个 HYPERDRIVE binding，因此这个 binding 必须关闭缓存。不要让认证/session/权限请求共用一个仍启用查询缓存的 config；缓存配置属于 Hyperdrive 资源，不是把 wrangler.jsonc 中的 binding ID 改名就能关闭的 Worker 变量。
 
