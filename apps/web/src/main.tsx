@@ -36,7 +36,7 @@ function App() {
   }, []);
   return (
     <>
-      <div className="demo-strip">公开资料阅览版 · 劳动条件尚待独立审核</div>
+      <div className="demo-strip">受邀测试准备版 · 企业资料尚待独立双审</div>
       <header>
         <Link className="wordmark" to="/">
           <span className="mark">sx</span>open sxgo
@@ -85,6 +85,7 @@ function App() {
               <Route path="/privacy" element={<Info kind="privacy" />} />
               <Route path="/about" element={<Info kind="about" />} />
               <Route path="/methodology" element={<Info kind="methodology" />} />
+              <Route path="/pilot" element={<Info kind="pilot" />} />
               <Route
                 path="*"
                 element={
@@ -107,6 +108,7 @@ function App() {
           <Link to="/privacy">隐私与数据</Link>
           <Link to="/mirrors">镜像与参与</Link>
           <Link to="/about">关于项目</Link>
+          <Link to="/pilot">受邀测试说明</Link>
           <a href={intake + '/report'}>纠错与申诉</a>
         </div>
         <p className="disclaimer">
@@ -403,7 +405,7 @@ function Detail({ loaded, scopeOnly = false }: { loaded: Loaded; scopeOnly?: boo
                         ? c.value
                         : typeof c.value === 'object' && c.value
                           ? `通常每周休息 ${c.value.usual_rest_days_per_week} 天，${c.value.usual_rest_days.includes('saturday') ? '周六、周日' : '轮休'}`
-                          : '实际执行情况尚未获得足够资料'}
+                          : '该主体与岗位的制度及实际执行仍待核实'}
                     </p>
                   </div>
                   <span className={'tag ' + (validClaim(c) ? 'blue' : '')}>
@@ -423,14 +425,17 @@ function Detail({ loaded, scopeOnly = false }: { loaded: Loaded; scopeOnly?: boo
             </div>
           </section>
           <section className="panel">
-            <h2>公开来源</h2>
+            <h2>已找到的公开资料</h2>
+            <p className="muted">核对到原文不等于核实执行。以下背景资料不会自动计入推荐资格；Apple 自有页面属于同一来源家族。</p>
             {loaded.data.sources
               .filter((s) =>
-                s.supported_claim_ids.some((id) => scope.claims.some((c) => c.claim_id === id)) || (company.company_id === 'co_apple_beijing' && s.source_id === 'src_apple_identity'),
+                s.supported_claim_ids.some((id) => scope.claims.some((c) => c.claim_id === id)) || s.related_company_ids?.includes(company.company_id) || (company.company_id === 'co_apple_beijing' && s.source_id === 'src_apple_identity'),
               )
               .map((s) => (
                 <div className="source" key={s.source_id}>
                   <strong>{s.title}</strong>
+                  {s.summary && <p>{s.summary}</p>}
+                  {s.applicability && <p><strong>适用边界：</strong>{s.applicability}</p>}
                   <p>
                     {s.publisher} · {s.kind === 'company' ? '企业自有资料' : '第三方资料'}
                   </p>
@@ -537,6 +542,16 @@ function DataPage({ loaded }: { loaded: Loaded }) {
   );
 }
 const info: Record<string, { title: string; sections: [string, string][] }> = {
+  pilot: {
+    title: '受邀测试说明',
+    sections: [
+      ['本轮范围', '计划邀请 5–10 人，包含两名不同人员担任审核员。先完成账号、身份和访问范围配置，再安排一次 24 小时测试；当前尚未开放招募。'],
+      ['阅读与提交', '先阅读苹果的公开来源和适用边界，再通过“推荐企业”提交公开资料或纠错。不要提交内部合同、工资条、身份信息或附件。妥善保存私密回执，用于查询、补充和撤回。'],
+      ['独立审核', '两名审核员分别登录，完成双因素认证与安全密钥确认，核对同一版本的主体、岗位、来源和结论。利益冲突必须回避；同一人使用两个账号不算双审。账号与授权配置未完成前，审核测试不开始。'],
+      ['测试与发布', '测试通过不等于正式上线，也不会自动将苹果列为劳动友好企业。推广和生产发布保持关闭。签名与数据完整性验证仅确认下载未被篡改，不证明劳动待遇或资料已获双人批准。'],
+      ['时间与反馈', '在“数据与验证”查看本次发布有效期。测试必须在有效期内完成；到期后旧资料仅供历史浏览。发现错误可使用页脚的“纠错与申诉”；遇到隐私泄漏或越权，应停止相关测试并联系测试负责人。'],
+    ],
+  },
   methodology: {
     title: '核验方法',
     sections: [

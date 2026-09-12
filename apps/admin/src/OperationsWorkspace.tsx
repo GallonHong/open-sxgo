@@ -41,7 +41,7 @@ export function OperationsWorkspace() {
           <a href="/member/contributions">我的贡献</a>
           <a href="/review/queue">分配给我的案件</a>
           <a href="/governance/approvals">过渡治理</a>
-          <a href="/">账号登录</a>
+          <a href={import.meta.env.DEV ? '/' : '/admin'}>账号登录</a>
         </nav>
       </header>
       <main className="page">

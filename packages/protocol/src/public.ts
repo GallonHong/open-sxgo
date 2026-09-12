@@ -124,6 +124,9 @@ export const sourceSchema = z.strictObject({
   source_family: id,
   kind: z.enum(['company', 'third_party', 'independent_practice']),
   supported_claim_ids: z.array(id).max(100),
+  related_company_ids: z.array(id).max(100).optional(),
+  summary: text.optional(),
+  applicability: text.optional(),
 });
 export const brandSchema = z.strictObject({
   brand_id: id,

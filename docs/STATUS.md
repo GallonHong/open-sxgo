@@ -6,7 +6,7 @@ PRD2 增量进展见 [治理实施记录](governance/STATUS.md)。下表为原 P
 
 ## 已有实现与证据
 
-- 三个独立 React/Vite 构建，公开页面使用虚构数据，匿名投稿与管理员会话分开；公共 Service Worker 不缓存私密路径。
+- 三个独立 React/Vite 构建，公开页面使用苹果真实主体参考记录与官方来源摘要（具体待遇仍未知），匿名投稿与管理员会话分开；公共 Service Worker 不缓存私密路径。
 - Hono/Drizzle、SQLite 与 D1 适配，同一业务契约在 SQLite 与 Miniflare D1 上执行，验证事务回滚、并发冲突、双人复核和权限。
 - Better Auth 邀请制密码/TOTP：真实库集成测试验证初始绑定、再次登录的第二因素；没有把演示身份当成真实独立人员登记。
 - 严格公开 Schema、范围与未知状态、来源家族、规则有效期；构建 JSON、JSONL、SQLite、分片及摘要清单。

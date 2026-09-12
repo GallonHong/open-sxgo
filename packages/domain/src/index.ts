@@ -133,6 +133,9 @@ export function validateDataset(input: unknown, now = new Date()): Dataset {
   assert(new Set(objects).size === objects.length, 'DUPLICATE_ID');
   const sources = new Map(d.sources.map((s) => [s.source_id, s]));
   const companies = new Set(d.companies.map((c) => c.company_id));
+  for (const source of d.sources) {
+    assert((source.related_company_ids ?? []).every((id) => companies.has(id)), 'SOURCE_COMPANY_NOT_FOUND');
+  }
   const scopes = new Set(d.companies.flatMap((c) => c.scopes.map((s) => s.scope_id)));
   const brands = new Set(d.brands.map((b) => b.brand_id));
   for (const co of d.companies) {

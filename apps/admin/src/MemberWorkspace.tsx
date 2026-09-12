@@ -124,7 +124,7 @@ export function MemberWorkspace() {
         <a className="wordmark" href="/">
           <span className="mark">w</span>open sxgo / 成员
         </a>
-        <a href="/">审核员登录与工作台</a>
+        <a href={import.meta.env.DEV ? '/' : '/admin'}>审核员登录与工作台</a>
       </header>
       <main className="page">
         <div className="eyebrow">MY CONTRIBUTIONS</div>
