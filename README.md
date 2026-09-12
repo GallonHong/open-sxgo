@@ -10,6 +10,26 @@ Sites 托管范围与资料来源见 [网站交付说明](docs/SITE-DELIVERY.md)
 
 容器镜像拉取、后端部署与 IPFS 使用：[运行服务](docs/RUN-SERVICES.md)。
 
+## Radicle 源码副本
+
+公开源码也发布在 [Radicle · open-sxgo](https://radicle.network/nodes/rosa.radicle.network/rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK)。仓库标识（RID）为 `rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK`。
+
+安装 [Radicle](https://radicle.dev/) 后，可通过点对点网络拉取：
+
+```sh
+rad clone rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK
+```
+
+也可以使用普通 Git 从公共节点拉取：
+
+```sh
+git clone https://rosa.radicle.network/z4RgtcxwVYQrR4HNFVHNYdvVhhqdK.git open-sxgo
+```
+
+2026-09-12 首次发布时，Rosa、Iris 两个公共节点已同步；从远端重新克隆并完成 Git 完整性校验，提交为 `716e4ac3d2003831ebb10ebe0ce481694b2043fa`。这是该次发布的验证记录，不代表节点持续在线或始终包含最新提交。
+
+GitHub 仍是主要开发入口，Radicle 目前手动同步，GitHub 更新不会自动传播。该副本仅包含公开 Git 仓库，不包含私密投稿数据库、审核账号或签名私钥；容器镜像仍通过 GHCR 分发，公开数据恢复包另通过 IPFS 分发。
+
 ## 本地启动
 
 需要 Node.js 24.15+、pnpm 11.9.0。安装依赖会编译 SQLite 原生模块；没有预编译产物时需要本机 C++ 构建环境。
