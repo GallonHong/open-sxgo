@@ -3,6 +3,7 @@ import assets from 'virtual:site-assets';
 export default {
   async fetch(request: Request, env: Parameters<typeof api.fetch>[1]) {
     const url = new URL(request.url);
+    if (url.pathname.length > 1 && url.pathname.endsWith('/') && !url.pathname.startsWith('/public/')) { url.pathname = url.pathname.replace(/\/+$/, ''); return Response.redirect(url.href,308); }
     if (url.pathname === '/health' || url.pathname.startsWith('/private/v1/') || url.pathname.startsWith('/admin/v1/')) {
       try { return await api.fetch(request, env); }
       catch { return Response.json({error:{code:'SERVICE_UNAVAILABLE'}},{status:503,headers:{'Cache-Control':'no-store'}}); }

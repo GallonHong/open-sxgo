@@ -16,6 +16,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm setup
       - run: pnpm check
+      - run: pnpm exec tsx scripts/check-site-backend.ts
+      - run: node --check dist/web/sw.js
       - run: pnpm worker:check
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e

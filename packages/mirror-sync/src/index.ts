@@ -11,7 +11,7 @@ import {
 } from '../../verifier/src/index';
 import { validateDataset, assert } from '../../domain/src/index';
 import { verifyBusinessData } from '../../verifier/src/business';
-import { hash } from '../../verifier/src/crypto';
+import { hash, utf8, canonical } from '../../verifier/src/crypto';
 async function durableReplace(path: string, text: string) {
   const file = await open(path + '.next', 'w', 0o600);
   try {
@@ -46,6 +46,15 @@ export async function syncMirror(base: string, directory: string, rootPath: stri
     staging = await mkdtemp(join(dir, '.stage-'));
     const rootBytes = await readFile(rootPath),
       trusted = decode(rootBytes);
+    const anchor = await hash(utf8(canonical(trusted)));
+    try {
+      assert((await readFile(join(dir, 'trust-anchor.sha256'), 'utf8')).trim() === anchor, 'TRUST_ANCHOR_CHANGED');
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+      if (previous) assert(await hash(utf8(canonical(previous.root))) === anchor, 'TRUST_ANCHOR_CHANGED');
+      await durableReplace(join(dir, 'trust-anchor.sha256'), anchor);
+    }
+
     let checkpoint: MetadataCheckpoint | undefined;
     try {
       checkpoint = JSON.parse(await readFile(join(dir, 'trusted-metadata.json'), 'utf8'));

@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, join, extname } from 'node:path';
 import { createReadStream } from 'node:fs';
+import { hash, utf8, canonical } from '../packages/verifier/src/crypto';
 import { syncMirror } from '../packages/mirror-sync/src/index';
 const dir = resolve(process.env.MIRROR_DATA_DIR ?? '.runtime/mirror'),
   base = process.env.MIRROR_SOURCE,
@@ -42,6 +43,9 @@ const server = createServer(async (req, res) => {
       const current = (await readFile(join(dir, 'CURRENT'), 'utf8')).trim();
       if (!/^[a-z0-9.-]+$/.test(current)) throw Error('INVALID_CURRENT');
       const state = JSON.parse(await readFile(join(dir, 'versions', current, 'state.json'), 'utf8'));
+      const pinned = await hash(utf8(canonical(JSON.parse(await readFile(root, 'utf8')))));
+      const anchor = (await readFile(join(dir, 'trust-anchor.sha256'), 'utf8')).trim();
+      if (pinned !== anchor) throw Error('TRUST_ANCHOR_CHANGED');
       const timestamp = JSON.parse(state.metadata.timestamp);
       const historical = Date.parse(timestamp.signed.expires) <= Date.now();
       res.setHeader('Content-Type', 'application/json');

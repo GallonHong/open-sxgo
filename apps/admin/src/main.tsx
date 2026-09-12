@@ -81,7 +81,7 @@ function App() {
         <a href="/member/contributions">我的贡献与资格</a>
         <a href="/review/queue">独立双审</a>
         <a href="/governance/approvals">过渡治理</a>
-        <a className="wordmark" href="http://127.0.0.1:5173">
+        <a className="wordmark" href={import.meta.env.DEV ? 'http://127.0.0.1:5173' : '/'}>
           <span className="mark">w</span>WFD 审核工作台
         </a>
         {me && (
