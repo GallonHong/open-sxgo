@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHash, generateKeyPairSync, randomBytes, sign as signData } from 'node:crypto';
 import { isoBase64URL, isoCBOR } from '@simplewebauthn/server/helpers';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
-import { testDatabase } from './support/database';
+import { testDatabase, databaseAdapters } from './support/database';
 import type { Database } from '../packages/db/src/adapter';
 import {
   assignCase,
@@ -216,7 +216,7 @@ function makeAssertion(
   };
 }
 
-for (const adapter of ['sqlite', 'd1'] as const) {
+for (const adapter of databaseAdapters) {
   describe(`identity permissions (${adapter})`, () => {
     let db: Database;
     let close: () => Promise<void>;

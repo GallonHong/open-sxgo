@@ -12,7 +12,7 @@ import {
   grantScopeSchema,
   type GrantScope,
 } from '../packages/identity-permissions/src/index';
-import { testDatabase } from './support/database';
+import { testDatabase, databaseAdapters } from './support/database';
 
 const future = '2026-12-31T00:00:00.000Z';
 const origin = 'https://admin.example';
@@ -277,7 +277,7 @@ async function seedRealSourceReviewer(db: Awaited<ReturnType<typeof testDatabase
   ]);
 }
 
-for (const adapter of ['sqlite', 'd1'] as const)
+for (const adapter of databaseAdapters)
   describe(adapter + ' review API', () => {
     let fixture: Awaited<ReturnType<typeof testDatabase>> | undefined;
     let current = principal('person_prepare');

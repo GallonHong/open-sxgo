@@ -7,6 +7,7 @@ import type { Database } from '../packages/db/src/adapter';
 import { Service } from '../apps/api/src/service';
 import { createApp } from '../apps/api/src/app';
 import type { Principal, SubmissionInput } from '../packages/protocol/src/private';
+import { testDatabase, databaseAdapters } from './support/database';
 import { fixtureDataset } from '../scripts/fixtures';
 const p: Principal = {
   user_id: 'u1',
@@ -27,12 +28,16 @@ const body: SubmissionInput = {
   source_urls: ['https://example.org/policy'],
   notes: '',
 };
-for (const adapter of ['sqlite', 'd1'] as const)
+for (const adapter of databaseAdapters)
   describe(adapter + ' 业务契约', () => {
     let db: Database, service: Service, close: () => Promise<void>;
     beforeEach(async () => {
       const sql = await readFile('migrations/0001_init.sql', 'utf8');
-      if (adapter === 'sqlite') {
+      if (adapter === 'postgres') {
+        const fixture = await testDatabase('postgres');
+        db = fixture.db;
+        close = fixture.close;
+      } else if (adapter === 'sqlite') {
         const n = openDatabase(':memory:');
         n.sqlite.exec(sql);
         db = n.db;

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import type { Database } from '../packages/db/src/adapter';
 import { newKey } from '../packages/builder/src/index';
-import { testDatabase } from './support/database';
+import { testDatabase, databaseAdapters } from './support/database';
 import {
   appendAuthoritySignature,
   appendGovernanceSignature,
@@ -494,7 +494,7 @@ describe('governance signing v2 role revoke', () => {
   });
 });
 
-for (const adapter of ['sqlite', 'd1'] as const)
+for (const adapter of databaseAdapters)
   describe(`role revoke executor crash-safe mutation (${adapter})`, () => {
     let db: Database;
     let closeDatabase: () => Promise<void>;

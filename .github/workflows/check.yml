@@ -5,6 +5,21 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: sxgo_ci_only
+          POSTGRES_DB: sxgo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgresql://postgres:sxgo_ci_only@127.0.0.1:5432/sxgo_test
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -15,10 +30,12 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm setup
+      - run: pnpm cloudflare:types
       - run: pnpm check
       - run: pnpm exec tsx scripts/check-site-backend.ts
       - run: node --check dist/web/sw.js
       - run: pnpm worker:check
+      - run: pnpm cloudflare:check
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e
       - run: pnpm exec tsx tests/e2e-governance/webauthn.ts

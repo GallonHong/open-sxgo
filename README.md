@@ -10,6 +10,8 @@ Sites 托管范围与资料来源见 [网站交付说明](docs/SITE-DELIVERY.md)
 
 容器镜像拉取、后端部署与 IPFS 使用：[运行服务](docs/RUN-SERVICES.md)。
 
+Cloudflare Workers + Supabase PostgreSQL 的新测试环境、私密配置与回退步骤：[部署指南](docs/CLOUDFLARE-SUPABASE.md)。该环境与现有 Sites/D1 部署独立，云端开通状态以指南中的验收记录为准。
+
 ## Radicle 源码副本
 
 公开源码也发布在 [Radicle · open-sxgo](https://radicle.network/nodes/rosa.radicle.network/rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK)。仓库标识（RID）为 `rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK`。
@@ -39,6 +41,7 @@ GitHub 仍是主要开发入口，Radicle 目前手动同步，GitHub 更新不�
 ```sh
 pnpm install --frozen-lockfile
 pnpm setup
+pnpm cloudflare:types
 pnpm dev
 ```
 

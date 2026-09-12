@@ -1,8 +1,8 @@
 import { expect, it } from 'vitest';
-import { testDatabase } from './support/database';
+import { testDatabase, databaseAdapters } from './support/database';
 import { maintainGovernance } from '../packages/governance-policy/src/maintenance';
 
-for (const adapter of ['sqlite', 'd1'] as const)
+for (const adapter of databaseAdapters)
   it(`${adapter}: preview retention honors bounded holds and is repeatable`, async () => {
     const { db, close } = await testDatabase(adapter);
     const now = new Date('2026-09-12T00:00:00Z'),

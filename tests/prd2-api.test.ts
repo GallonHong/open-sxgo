@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
-import { testDatabase } from './support/database';
+import { testDatabase, databaseAdapters } from './support/database';
 import { createApp } from '../apps/api/src/app';
 import type { Principal } from '../packages/protocol/src/private';
 const origin = 'https://admin.example';
@@ -13,7 +13,7 @@ const current: Principal = {
   verified: true,
   two_factor: true,
 };
-for (const adapter of ['sqlite', 'd1'] as const)
+for (const adapter of databaseAdapters)
   describe(adapter + ' PRD2 interface boundaries', () => {
     let fixture: Awaited<ReturnType<typeof testDatabase>>;
     beforeEach(async () => {

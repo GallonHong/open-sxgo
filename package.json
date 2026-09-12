@@ -37,7 +37,12 @@
     "governance:demo": "tsx scripts/governance-demo.ts",
     "maintenance": "tsx scripts/maintenance.ts",
     "ipfs:publish": "tsx scripts/ipfs-publish.ts",
-    "mirror:up": "sh scripts/mirror-up.sh"
+    "mirror:up": "sh scripts/mirror-up.sh",
+    "api:postgres": "tsx apps/api/src/node-postgres.ts",
+    "db:postgres:migrate": "tsx scripts/migrate-postgres.ts",
+    "cloudflare:types": "tsx scripts/cloudflare-types.ts",
+    "cloudflare:check": "wrangler deploy --dry-run --config apps/cloudflare/wrangler.jsonc",
+    "cloudflare:deploy": "tsx scripts/deploy-cloudflare.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.4",
@@ -51,6 +56,8 @@
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.7",
     "ipaddr.js": "^2.5.0",
+    "jose": "^6.2.12",
+    "pg": "^8.23.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.3",
@@ -62,6 +69,7 @@
     "@playwright/test": "^1.63.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^22.20.2",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",

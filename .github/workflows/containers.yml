@@ -2,7 +2,18 @@ name: Publish containers
 on:
   push:
     branches: [main]
-    paths: ['apps/**', 'packages/**', 'scripts/**', 'infra/**', 'migrations/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/containers.yml']
+    paths:
+      [
+        'apps/**',
+        'packages/**',
+        'scripts/**',
+        'infra/**',
+        'migrations/**',
+        'migrations-postgres/**',
+        'package.json',
+        'pnpm-lock.yaml',
+        '.github/workflows/containers.yml',
+      ]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,9 +38,10 @@ jobs:
         env:
           ARCH: ${{ matrix.arch }}
         run: |
-          for component in mirror backend; do
+          for component in mirror backend postgres; do
             file=infra/mirror/Dockerfile
             if [ "$component" = backend ]; then file=infra/intake/Dockerfile; fi
+            if [ "$component" = postgres ]; then file=infra/postgres/Dockerfile; fi
             image="ghcr.io/gallonhong/open-sxgo-$component"
             docker build --label org.opencontainers.image.source=https://github.com/GallonHong/open-sxgo --label org.opencontainers.image.revision="$GITHUB_SHA" -f "$file" -t "$image:$GITHUB_SHA-$ARCH" .
             docker push "$image:$GITHUB_SHA-$ARCH"
@@ -44,7 +56,7 @@ jobs:
         run: printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
       - name: Publish both architectures
         run: |
-          for component in mirror backend; do
+          for component in mirror backend postgres; do
             image="ghcr.io/gallonhong/open-sxgo-$component"
             docker buildx imagetools create -t "$image:latest" -t "$image:$GITHUB_SHA" "$image:$GITHUB_SHA-amd64" "$image:$GITHUB_SHA-arm64"
           done

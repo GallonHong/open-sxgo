@@ -10,10 +10,11 @@ export function createAuth(
   secret: string,
   origin: string,
   identityDb?: Database,
+  provider: 'sqlite' | 'pg' = 'sqlite',
 ) {
   const authOrigin = new URL(origin);
   return betterAuth({
-    database: drizzleAdapter(db, { provider: 'sqlite' }),
+    database: drizzleAdapter(db, { provider }),
     secret,
     baseURL: origin,
     basePath: '/admin/v1/auth',
