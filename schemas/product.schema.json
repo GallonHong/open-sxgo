@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "brand_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "store_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "link_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "promotion_status": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "disabled"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "product_id",
+    "brand_id",
+    "category",
+    "title",
+    "store_id",
+    "link_id",
+    "promotion_status",
+    "description"
+  ],
+  "additionalProperties": false
+}

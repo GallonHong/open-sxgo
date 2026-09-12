@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /app || exit 1
+exec node --import tsx /app/scripts/conformance/client.ts "$@"

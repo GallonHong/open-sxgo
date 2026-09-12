@@ -1,0 +1,2 @@
+# WFD v1 does not authorize ML-DSA keys. This optional algorithm family is unsupported.
+test_mldsa_keytype_and_scheme

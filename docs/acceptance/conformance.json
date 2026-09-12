@@ -1,0 +1,130 @@
+{
+  "upstream_commit": "601f45680111cb3f90008dd878b60fc5de4e542a",
+  "core": {
+    "summary": {
+      "passed": 116,
+      "xfailed": 3,
+      "total": 119,
+      "collected": 119
+    },
+    "unsupported_optional": [
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-44/1]",
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-65/1]",
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-87/1]"
+    ]
+  },
+  "official": {
+    "version": "tuf-js 6.0.0",
+    "summary": {
+      "passed": 112,
+      "failed": 7,
+      "total": 119,
+      "collected": 119
+    },
+    "failures": [
+      "tuf_conformance/test_keys.py::test_rsa_keytype_and_scheme[rsa/rsassa-pss-sha384]",
+      "tuf_conformance/test_keys.py::test_rsa_keytype_and_scheme[rsa/rsassa-pss-sha512]",
+      "tuf_conformance/test_keys.py::test_ecdsa_keytype_and_scheme[ecdsa/ecdsa-sha2-nistp384]",
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-44/1]",
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-65/1]",
+      "tuf_conformance/test_keys.py::test_mldsa_keytype_and_scheme[ml-dsa/ml-dsa-87/1]",
+      "tuf_conformance/test_updater_delegation_graphs.py::test_cached_role_is_verified_against_current_delegator"
+    ]
+  },
+  "browser": {
+    "passed": 18,
+    "results": [
+      {
+        "browser": "chromium",
+        "test": "valid",
+        "actual": "valid"
+      },
+      {
+        "browser": "chromium",
+        "test": "tampered",
+        "actual": "HASH_MISMATCH"
+      },
+      {
+        "browser": "chromium",
+        "test": "expired",
+        "actual": "EXPIRED"
+      },
+      {
+        "browser": "chromium",
+        "test": "rollback",
+        "actual": "ROLLBACK"
+      },
+      {
+        "browser": "chromium",
+        "test": "fork",
+        "actual": "FORK"
+      },
+      {
+        "browser": "chromium",
+        "test": "signature_threshold",
+        "actual": "SIGNATURE_THRESHOLD"
+      },
+      {
+        "browser": "firefox",
+        "test": "valid",
+        "actual": "valid"
+      },
+      {
+        "browser": "firefox",
+        "test": "tampered",
+        "actual": "HASH_MISMATCH"
+      },
+      {
+        "browser": "firefox",
+        "test": "expired",
+        "actual": "EXPIRED"
+      },
+      {
+        "browser": "firefox",
+        "test": "rollback",
+        "actual": "ROLLBACK"
+      },
+      {
+        "browser": "firefox",
+        "test": "fork",
+        "actual": "FORK"
+      },
+      {
+        "browser": "firefox",
+        "test": "signature_threshold",
+        "actual": "SIGNATURE_THRESHOLD"
+      },
+      {
+        "browser": "webkit",
+        "test": "valid",
+        "actual": "valid"
+      },
+      {
+        "browser": "webkit",
+        "test": "tampered",
+        "actual": "HASH_MISMATCH"
+      },
+      {
+        "browser": "webkit",
+        "test": "expired",
+        "actual": "EXPIRED"
+      },
+      {
+        "browser": "webkit",
+        "test": "rollback",
+        "actual": "ROLLBACK"
+      },
+      {
+        "browser": "webkit",
+        "test": "fork",
+        "actual": "FORK"
+      },
+      {
+        "browser": "webkit",
+        "test": "signature_threshold",
+        "actual": "SIGNATURE_THRESHOLD"
+      }
+    ],
+    "at": "2026-09-12T09:24:41.303Z"
+  }
+}

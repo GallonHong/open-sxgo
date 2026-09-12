@@ -1,0 +1,917 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "demo": {
+      "type": "boolean"
+    },
+    "companies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "legal_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "jurisdiction": {
+            "type": "string",
+            "const": "CN"
+          },
+          "public_identifier": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "aliases": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "industry": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "entity_status": {
+            "type": "string",
+            "enum": [
+              "checked",
+              "pending"
+            ]
+          },
+          "scopes": {
+            "minItems": 1,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "scope_id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                },
+                "company_id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                },
+                "city_code": {
+                  "type": "string",
+                  "pattern": "^\\d{6}$"
+                },
+                "city": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "site_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "job_group": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "employment_type": {
+                  "type": "string",
+                  "enum": [
+                    "full_time_employee",
+                    "other",
+                    "unknown"
+                  ]
+                },
+                "work_time_regime": {
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "special_regime_pending_review"
+                  ]
+                },
+                "listing_state": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "recheck_required",
+                    "suppressed",
+                    "expired",
+                    "withdrawn_from_directory"
+                  ]
+                },
+                "claims": {
+                  "maxItems": 50,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "claim_id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                      },
+                      "scope_id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                      },
+                      "dimension": {
+                        "type": "string",
+                        "enum": [
+                          "rest_schedule",
+                          "written_contract_policy",
+                          "working_hours_policy",
+                          "overtime_payment_practice",
+                          "salary_policy",
+                          "social_insurance_policy",
+                          "annual_leave_policy",
+                          "extra_leave",
+                          "safety_policy"
+                        ]
+                      },
+                      "value": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 300
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "usual_rest_days_per_week": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 7
+                              },
+                              "usual_rest_days": {
+                                "maxItems": 7,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "monday",
+                                    "tuesday",
+                                    "wednesday",
+                                    "thursday",
+                                    "friday",
+                                    "saturday",
+                                    "sunday"
+                                  ]
+                                }
+                              },
+                              "holiday_adjustments_excluded": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "usual_rest_days_per_week",
+                              "usual_rest_days",
+                              "holiday_adjustments_excluded"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "evidence_status": {
+                        "type": "string",
+                        "enum": [
+                          "unknown",
+                          "self_declared",
+                          "source_checked",
+                          "practice_corroborated",
+                          "needs_recheck",
+                          "expired"
+                        ]
+                      },
+                      "source_ids": {
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                        }
+                      },
+                      "checked_on": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "valid_from": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "valid_until": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "rule_version": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+                      }
+                    },
+                    "required": [
+                      "claim_id",
+                      "scope_id",
+                      "dimension",
+                      "value",
+                      "evidence_status",
+                      "source_ids",
+                      "checked_on",
+                      "valid_from",
+                      "valid_until",
+                      "rule_version"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "limitations": {
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "record_revision": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "scope_id",
+                "company_id",
+                "city_code",
+                "city",
+                "site_label",
+                "job_group",
+                "employment_type",
+                "work_time_regime",
+                "listing_state",
+                "claims",
+                "limitations",
+                "record_revision"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "official_website_link_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brand_ids": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          }
+        },
+        "required": [
+          "company_id",
+          "legal_name",
+          "jurisdiction",
+          "public_identifier",
+          "aliases",
+          "industry",
+          "entity_status",
+          "scopes",
+          "official_website_link_id",
+          "brand_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "publisher": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "published_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "checked_on": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "source_family": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "company",
+              "third_party",
+              "independent_practice"
+            ]
+          },
+          "supported_claim_ids": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          }
+        },
+        "required": [
+          "source_id",
+          "url",
+          "title",
+          "publisher",
+          "published_on",
+          "checked_on",
+          "source_family",
+          "kind",
+          "supported_claim_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "brands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "brand_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "categories": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        },
+        "required": [
+          "brand_id",
+          "name",
+          "categories"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "relation_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "company_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "brand_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "relation_type": {
+            "type": "string",
+            "enum": [
+              "owned",
+              "authorized",
+              "subsidiary"
+            ]
+          },
+          "source_ids": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "relation_id",
+          "company_id",
+          "brand_id",
+          "relation_type",
+          "source_ids",
+          "valid_until"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "store_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "brand_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "platform": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "platform_store_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "seller_company_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "relation_type": {
+            "type": "string",
+            "enum": [
+              "owned",
+              "authorized"
+            ]
+          },
+          "verification_state": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "pending",
+              "expired"
+            ]
+          },
+          "source_ids": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "store_id",
+          "brand_id",
+          "platform",
+          "platform_store_id",
+          "seller_company_id",
+          "relation_type",
+          "verification_state",
+          "source_ids",
+          "valid_until"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "brand_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "store_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "link_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "promotion_status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "disabled"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "product_id",
+          "brand_id",
+          "category",
+          "title",
+          "store_id",
+          "link_id",
+          "promotion_status",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "official_website",
+              "official_careers",
+              "brand_owned_store",
+              "verified_authorized_store",
+              "product_page",
+              "service_page"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          },
+          "store_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seller_company_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "linked_scope_ids": {
+            "minItems": 1,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          },
+          "relation_source_ids": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+            }
+          },
+          "checked_on": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "ad_label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "broken",
+              "risk_disabled",
+              "expired",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "link_id",
+          "type",
+          "url",
+          "store_id",
+          "seller_company_id",
+          "linked_scope_ids",
+          "relation_source_ids",
+          "checked_on",
+          "valid_until",
+          "ad_label",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule_version": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "const": "CN"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "effective_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewed_on": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2048,
+              "format": "uri"
+            }
+          },
+          "policy_ttl_days": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 180
+          },
+          "practice_ttl_days": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 90
+          },
+          "warning_days": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "metadata_ttl_hours": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 48
+          },
+          "demo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rule_version",
+          "jurisdiction",
+          "effective_from",
+          "effective_to",
+          "reviewed_on",
+          "sources",
+          "policy_ttl_days",
+          "practice_ttl_days",
+          "warning_days",
+          "metadata_ttl_hours",
+          "demo"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "correct",
+              "suppress",
+              "withdraw"
+            ]
+          },
+          "rule_version": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "reviewer_key_ids": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "publication_date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "decision_id",
+          "record_id",
+          "action",
+          "rule_version",
+          "reviewer_key_ids",
+          "publication_date"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "mirrors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mirror_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          },
+          "operator_group": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "provider_group": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+          },
+          "observed_on": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "data",
+                "web",
+                "ipfs"
+              ]
+            }
+          }
+        },
+        "required": [
+          "mirror_id",
+          "url",
+          "operator_group",
+          "provider_group",
+          "observed_on",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "demo",
+    "companies",
+    "sources",
+    "brands",
+    "relations",
+    "stores",
+    "products",
+    "links",
+    "rules",
+    "decisions",
+    "mirrors"
+  ],
+  "additionalProperties": false
+}

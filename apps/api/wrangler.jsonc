@@ -1,0 +1,27 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "wfd-private-staging",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wfd-private-staging",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "../../migrations",
+    },
+  ],
+  "vars": {
+    "MODE": "demo",
+    "INTAKE_ENABLED": "false",
+    "PROMOTION_ENABLED": "false",
+    "PRODUCTION_RELEASE_ENABLED": "false",
+    "ADMIN_ORIGIN": "https://admin.example",
+    "INTAKE_ORIGIN": "https://intake.example",
+  },
+  "triggers": { "crons": ["0 3 * * *"] },
+  "observability": { "enabled": false },
+  "limits": { "cpu_ms": 1000 },
+}

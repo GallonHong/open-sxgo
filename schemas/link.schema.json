@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "link_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "official_website",
+        "official_careers",
+        "brand_owned_store",
+        "verified_authorized_store",
+        "product_page",
+        "service_page"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 2048,
+      "format": "uri"
+    },
+    "store_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "seller_company_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+    },
+    "linked_scope_ids": {
+      "minItems": 1,
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+      }
+    },
+    "relation_source_ids": {
+      "minItems": 1,
+      "maxItems": 30,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]{2,100}$"
+      }
+    },
+    "checked_on": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+    },
+    "ad_label": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "broken",
+        "risk_disabled",
+        "expired",
+        "withdrawn"
+      ]
+    }
+  },
+  "required": [
+    "link_id",
+    "type",
+    "url",
+    "store_id",
+    "seller_company_id",
+    "linked_scope_ids",
+    "relation_source_ids",
+    "checked_on",
+    "valid_until",
+    "ad_label",
+    "status"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,15 @@
+.git
+node_modules
+.runtime
+.env
+.dev.vars
+.wrangler
+dist
+test-results
+playwright-report
+worker-configuration.d.ts
+
+*.key
+*.pem
+*.jwk
+*.jwk.json
