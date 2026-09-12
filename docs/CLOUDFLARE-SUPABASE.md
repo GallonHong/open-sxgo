@@ -1,22 +1,22 @@
 # Cloudflare Workers + Supabase PostgreSQL staging：部署与回滚
 
-本文是一个封闭 staging 的操作手册。下面的状态段记录 2026-09-12 已完成的 staging 部署与验证；其余章节保留从零初始化、日常检查和回滚步骤。该环境仍是 pilot，不能当作完整 pilot 或生产就绪证明。
+本文是一个公开浏览测试环境的操作手册。下面的状态段记录 2026-09-12 已完成的 staging 部署与验证；其余章节保留从零初始化、日常检查和回滚步骤。审核权限、投稿、推广和生产发布仍受服务端规则限制，不能把该环境当作完整 pilot 或生产就绪证明。
 
 ## 当前状态（2026-09-12）
 
-- 代码提交 `7919917` 已部署到 Cloudflare Worker，部署版本为 `22bf48a6-105d-434b-9f49-f58da446d71d`。测试入口为 [open-sxgo-postgres-staging.gallonhong.workers.dev/pilot](https://open-sxgo-postgres-staging.gallonhong.workers.dev/pilot)。该入口使用应用内邀请 cookie，未启用收费的 Cloudflare Access/Zero Trust。
+- 公开浏览入口已部署到 Cloudflare Worker：[open-sxgo-postgres-staging.gallonhong.workers.dev](https://open-sxgo-postgres-staging.gallonhong.workers.dev)。公开目录和 `/companies` 可直接访问；旧的 `/pilot` 入口实际返回 303 并跳转到 `/companies`。管理员和审核员仍由 Better Auth 负责认证与权限；具体 Worker 版本以 Cloudflare deployment history 为准。
 - Supabase project `open-sxgo-staging` 已创建，`wfd_private` schema 已有 62 张表。迁移角色当前为 `wfd_migrator` 且 `NOLOGIN`；运行时角色为 `wfd_runtime`，无管理权限和 `BYPASSRLS`。`anon` 没有该 schema 的 `USAGE` 权限。
 - 本机使用 Supabase CA 的 TLS `verify-full` 验证通过。Hyperdrive 使用直连数据库连接（不是 pooler），查询缓存已关闭，origin connection limit 为 5，并以自定义 CA 配置 `sslmode=verify-full`。
-- 线上 smoke 已通过：无邀请码访问 `/health` 返回 403；邀请码入口返回 303；认证后 `/health` 返回 200 且 `database: ready`；`/companies`、`/admin`、`/contribute` 和 `/admin/v1/auth/get-session` 返回 200（后者为空会话）；不存在的 `/public/missing.json` 返回 404；配置保持 `intake=false`、`promo=false`；投稿 POST 返回 `503 INTAKE_PAUSED`；无效回执状态 POST 返回 401，证明限流写库路径工作。
+- 本轮线上 smoke 已验证：直接访问 `/companies` 和 `/admin` 返回 200；`/pilot` 返回 303 并跳转到 `/companies`；`/admin/v1/me` 和 `/admin/v1/work-items` 返回 403；认证后 `/health` 返回 200 且 `database: ready`；`/admin/v1/auth/get-session` 返回 200（空会话）；不存在的 `/public/missing.json` 返回 404；配置保持 `intake=false`、`promo=false`；投稿 POST 返回 `503 INTAKE_PAUSED`；无效回执状态 POST 返回 401，证明限流写库路径工作。
 - 云端 PostgreSQL 的条件更新失败回滚测试通过，没有留下测试记录。线上发布包 `2026-09-12.1` 的元数据、8 个数据文件及暂停清单均通过验证；仍使用演示信任根，当前时间戳元数据于北京时间 2026-09-14 20:33 到期，持续试运行前须更新测试发布包。
 - GitHub CI 对提交 `7919917` 成功；GHCR 的 mirror、backend、postgres 镜像已验证存在匿名可拉取的 amd64/arm64 manifest。Radicle RID `rad:z4RgtcxwVYQrR4HNFVHNYdvVhhqdK` 的 `7919917` 已同步到 1 个 seed。
 
-尚未配置真实审核账号或两名独立审核员，因此不能宣称完整 pilot 入场已经 ready。本文不记录密码、邀请清晰码、真实用户邮箱或账号 ID；旧 Sites/D1 和 SQLite 容器仍保留，真实私密数据没有迁移。
+尚未配置真实审核账号或两名独立审核员，因此不能宣称完整 pilot 已经 ready。本文不记录密码、真实用户邮箱或账号 ID；旧 Sites/D1 和 SQLite 容器仍保留，真实私密数据没有迁移。
 
 目标拓扑如下：浏览器访问 Cloudflare Worker 和静态资源，Worker 通过一个关闭查询缓存的 Hyperdrive 连接到一个新的 Supabase PostgreSQL staging 数据库。原有 Sites/D1 和 SQLite 容器继续保留；本流程不导入、不复制真实私密数据，也不改变旧的 compose.yaml、Sites 或 SQLite 迁移。
 
-    pilot browser
-        │  HTTPS + application invite cookie
+    public browser
+        │  HTTPS
         ▼
     Cloudflare Worker + static assets
         │  HYPERDRIVE (query caching disabled)
@@ -39,7 +39,7 @@ apps/cloudflare/wrangler.jsonc 只保存 binding、变量和资源占位符。�
     CLOUDFLARE_HYPERDRIVE_ID=<32 位十六进制、非全零 Hyperdrive id>
     WFD_PUBLIC_ORIGIN=https://<staging-origin>
 
-本文只使用占位符，不要把真实用户邮箱、账号标识或邀请清晰码写进本文、示例、构建日志或截图。account ID、Hyperdrive ID 和域名是资源标识，不是密码；按团队的普通配置访问规则保存即可。数据库连接串中的密码、角色密码及应用 secret 仍不得进入 Git、日志或 Worker vars。
+本文只使用占位符，不要把真实用户邮箱或账号标识写进本文、示例、构建日志或截图。account ID、Hyperdrive ID 和域名是资源标识，不是密码；按团队的普通配置访问规则保存即可。数据库连接串中的密码、角色密码及应用 secret 仍不得进入 Git、日志或 Worker vars。
 
 WFD_PUBLIC_ORIGIN 必须是完整的 HTTPS origin，不能带路径、查询串、片段或结尾斜杠。当前脚本支持两种入口：
 
@@ -126,15 +126,11 @@ Hyperdrive 的数据库目标应是刚初始化的 Supabase staging，连接角�
 
 当前 Worker 只有一个 HYPERDRIVE binding，因此这个 binding 必须关闭缓存。不要让认证/session/权限请求共用一个仍启用查询缓存的 config；缓存配置属于 Hyperdrive 资源，不是把 wrangler.jsonc 中的 binding ID 改名就能关闭的 Worker 变量。
 
-## 5. 准备邀请入口和 Worker 配置
+## 5. 配置 Worker 与公开入口
 
-项目没有启用收费的 Cloudflare Access/Zero Trust 授权。staging pilot 使用应用内邀请 cookie 入口：PILOT_INVITE_HASHES 保存邀请码 SHA-256 摘要，PILOT_COOKIE_SECRET 用来签发/验证 cookie。它只是封闭 pilot 的应用门禁，不能替代正式身份、独立审核或生产边界；邀请码也不能被当作真实账号身份。
+Worker 的公开目录和 `/companies` 路径直接服务浏览请求；旧 `/pilot` 路径自动跳转到公开入口。管理员和审核员的私有请求仍须经过 Better Auth 会话和应用权限检查。投稿、推广和生产发布继续由服务端开关关闭；公开可读不等于私有数据可读。
 
-为全新 staging 生成本地凭据。脚本使用独占创建模式，发现已有文件就拒绝覆盖；它生成 10 个高熵邀请码和对应摘要，但不会发送邀请：
-
-    pnpm exec tsx scripts/prepare-pilot-secrets.ts
-
-生成的 .runtime/private/cloudflare-pilot/secrets.json 和 invitations.json 是本地私密文件，权限分别由脚本设为受保护模式，且 .runtime/ 已被 Git 忽略。清晰码只应保存在本地受保护密码管理器/文件中，再通过已经确认身份的渠道交给少量 pilot 测试人员；不要把真实邮箱、账号 ID 或邀请清晰码写入仓库、issue、日志或本文。数据库角色用户名和密码也只保存在本地受保护密码管理器、权限为 0600 的密码文件或 CI secret 中。
+部署脚本只接收 account、Hyperdrive 和 origin 资源配置，生成被 `.gitignore` 忽略的 `.runtime/cloudflare/wrangler.json`。Better Auth secret 仍通过 Wrangler secret 机制提供；数据库密码和应用 secret 不得写入 Git、日志、Worker vars 或 Dockerfile。公开目录不绕过 Better Auth 的私有权限检查。
 
 先进行配置生成和 Wrangler dry-run：
 
@@ -143,20 +139,16 @@ Hyperdrive 的数据库目标应是刚初始化的 Supabase staging，连接角�
     export WFD_PUBLIC_ORIGIN=https://<staging-origin>
     pnpm cloudflare:deploy -- --dry-run
 
-scripts/deploy-cloudflare.ts 会读取 tracked 的 apps/cloudflare/wrangler.jsonc，填入上述资源和 origin，始终将 INTAKE_ENABLED 写为 false，并生成 mode 0600 的 .runtime/cloudflare/wrangler.json。--dry-run 只调用 Wrangler 的 deploy --dry-run，不发布 Worker，也不创建付费资源。确认输出没有路径、placeholder origin 或错误 Hyperdrive ID 后，再安装 Wrangler secrets：
+scripts/deploy-cloudflare.ts 会读取 tracked 的 apps/cloudflare/wrangler.jsonc，填入上述资源和 origin，始终将 INTAKE_ENABLED 写为 false，并生成 mode 0600 的 .runtime/cloudflare/wrangler.json。--dry-run 只调用 Wrangler 的 deploy --dry-run，不发布 Worker，也不创建付费资源。确认输出没有路径、placeholder origin 或错误 Hyperdrive ID 后，再按当前 Wrangler 配置安装 Better Auth secret。
 
-    pnpm exec wrangler secret bulk \
-      .runtime/private/cloudflare-pilot/secrets.json \
-      --config .runtime/cloudflare/wrangler.json
+BETTER_AUTH_SECRET 必须通过 Wrangler secrets 提供；不要写进 wrangler.jsonc、.runtime/cloudflare/wrangler.json 的 vars、Dockerfile 或 Git。ADMIN_ORIGIN、INTAKE_ORIGIN、INTAKE_ENABLED 是非机密配置变量。Supabase 数据库密码留在 Hyperdrive 受保护配置和本地 secret store 中，不要作为 Worker 明文变量传入。
 
-BETTER_AUTH_SECRET、PILOT_COOKIE_SECRET 和 PILOT_INVITE_HASHES 必须通过 Wrangler secrets 提供；不要写进 wrangler.jsonc、.runtime/cloudflare/wrangler.json 的 vars、Dockerfile 或 Git。ADMIN_ORIGIN、INTAKE_ORIGIN、INTAKE_ENABLED 是非机密配置变量。Supabase 数据库密码留在 Hyperdrive 受保护配置和本地 secret store 中，不要作为 Worker 明文变量传入。
-
-入口代码、pilot gate 和真实域名配置完成并审阅后，才可执行实际发布：
+入口代码、公开跳转和真实域名配置完成并审阅后，执行实际发布：
 
     pnpm cloudflare:deploy
     unset CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_HYPERDRIVE_ID WFD_PUBLIC_ORIGIN
 
-在该命令成功前不要把 staging URL 当作已上线地址，也不要发放邀请。Worker required secrets 缺失时应停止部署；如果 pilot gate 的当前实现或配置入口仍在变更，继续保持未部署状态。
+Worker required secrets 缺失时应停止部署；每次发布后都要重新验证公开目录、`/pilot` 跳转和 Better Auth 审核权限。
 
 ## 6. 发布前检查和验收
 
@@ -189,7 +181,7 @@ infra/postgres/Dockerfile 是 PostgreSQL API runtime image；仓库目前没有�
 
 部署脚本强制 INTAKE_ENABLED=false，因此新投稿/变更报告保持关闭；不要通过手工修改生成配置绕过这个保护。PostgreSQL app 还固定为 production mode，promotionEnabled=false、productionReleaseEnabled=false。证据初始化接口返回 P1_DISABLED，生产发布接口返回 PRODUCTION_GATE_CLOSED，生产模式的 legacy authorization 也保持关闭。
 
-docs/PILOT.md 和 docs/STATUS.md 中记录的人工与治理阻塞仍然有效，包括真实人员参与、两名独立审核员、冲突与身份复核、备份恢复和线上演练等。功能开关和邀请 cookie 只能形成封闭 pilot 入口，不能把未完成的 pilot 标记为完成，也不能据此迁移真实私密数据或开启生产发布。
+docs/PILOT.md 和 docs/STATUS.md 中记录的人工与治理阻塞仍然有效，包括真实人员参与、两名独立审核员、冲突与身份复核、备份恢复和线上演练等。公开目录不会解除私有审核权限要求，也不能把未完成的 pilot 标记为完成，更不能据此迁移真实私密数据或开启生产发布。
 
 ## 8. 回滚
 
@@ -198,7 +190,7 @@ docs/PILOT.md 和 docs/STATUS.md 中记录的人工与治理阻塞仍然有效�
     pnpm wrangler deployments list --name <worker-name>
     pnpm wrangler rollback <known-good-version-id> --name <worker-name>
 
-如果没有可安全复用的版本，先停止 pilot 流量并保持 INTAKE_ENABLED=false，再发布已经通过 dry-run 的修复版本。轮换或撤销邀请摘要、cookie secret、Better Auth secret、数据库密码和 Hyperdrive 配置前，要记录影响范围：轮换 Better Auth secret 可能使现有 session/MFA 失效；撤销数据库凭据需要先准备新的最小权限凭据并验证连接。邀请清晰码、role 密码和新旧 secret 仍只保存在本地受保护存储，不要为了回滚把它们写入 Git。
+如果没有可安全复用的版本，先停止新流量并保持 INTAKE_ENABLED=false，再发布已经通过 dry-run 的修复版本。轮换 Better Auth secret、数据库密码和 Hyperdrive 配置前，要记录影响范围：轮换 Better Auth secret 可能使现有 session/MFA 失效；撤销数据库凭据需要先准备新的最小权限凭据并验证连接。role 密码和新旧 secret 仍只保存在本地受保护存储，不要为了回滚把它们写入 Git。
 
 数据库 rollback 遵循以下规则：
 
@@ -211,4 +203,4 @@ docs/PILOT.md 和 docs/STATUS.md 中记录的人工与治理阻塞仍然有效�
 
 ## 9. 记录格式
 
-每次 staging 操作只记录不含秘密的事实：日期、代码提交、migration 文件名和摘要、schema 名、Hyperdrive config 的非敏感标识、Worker 版本、origin 类型（workers.dev 或 custom domain）、dry-run/测试命令及结果、回滚原因和下一步阻塞。不要记录真实用户邮箱、账号 ID、邀请清晰码、数据库连接串、role 密码、Better Auth secret 或 cookie secret。
+每次 staging 操作只记录不含秘密的事实：日期、代码提交、migration 文件名和摘要、schema 名、Hyperdrive config 的非敏感标识、Worker 版本、origin 类型（workers.dev 或 custom domain）、dry-run/测试命令及结果、回滚原因和下一步阻塞。不要记录真实用户邮箱、账号 ID、数据库连接串、role 密码、Better Auth secret 或其他应用 secret。
