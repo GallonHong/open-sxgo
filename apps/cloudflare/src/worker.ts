@@ -1,19 +1,26 @@
 import type { CloudflarePostgresEnv } from '../worker-configuration';
 import { Client } from 'pg';
-import { pilotGate } from './pilot-gate';
 import { createPostgresApp } from '../../api/src/postgres-app';
 import { Service } from '../../api/src/service';
 import { maintainGovernance } from '../../../packages/governance-policy/src/maintenance';
 
 export default {
   async fetch(request: Request, env: CloudflarePostgresEnv, ctx: ExecutionContext) {
-    const gate = await pilotGate(request, {
-      origin: env.ADMIN_ORIGIN,
-      cookieSecret: env.PILOT_COOKIE_SECRET,
-      inviteTokensSha256: (env.PILOT_INVITE_HASHES ?? '').split(',').filter(Boolean),
-    });
-    if (gate) return gate;
     const url = new URL(request.url);
+    if (
+      url.pathname === '/pilot' ||
+      url.pathname === '/pilot/' ||
+      url.pathname === '/pilot/logout'
+    ) {
+      return new Response(null, {
+        status: 303,
+        headers: {
+          Location: new URL('/companies', url).href,
+          'Cache-Control': 'no-store',
+          'Set-Cookie': '__Host-sxgo-pilot=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict',
+        },
+      });
+    }
     if (
       url.pathname === '/health' ||
       url.pathname.startsWith('/private/v1/') ||

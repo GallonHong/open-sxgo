@@ -25,7 +25,7 @@
     "INTAKE_ENABLED": "false"
   },
   "secrets": {
-    "required": ["BETTER_AUTH_SECRET", "PILOT_COOKIE_SECRET", "PILOT_INVITE_HASHES"]
+    "required": ["BETTER_AUTH_SECRET"]
   },
   "triggers": {
     "crons": ["0 3 * * *"]
